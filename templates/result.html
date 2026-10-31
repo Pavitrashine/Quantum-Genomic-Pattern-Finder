@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+
+    <h2 class="text-center text-success fw-bold mb-5">
+        🧪 Genomic Analysis Results
+    </h2>
+
+    <!-- ===================== -->
+    <!-- Pattern Detection -->
+    <!-- ===================== -->
+    <div class="result-box mb-4">
+        <h4 class="text-primary">🔍 Pattern Detection</h4>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <strong>Sequence Length:</strong> {{ pattern.length }}
+            </li>
+            <li class="list-group-item">
+                <strong>Hydrophobic Residues:</strong> {{ pattern.hydrophobic }}
+            </li>
+            <li class="list-group-item">
+                <strong>Charged Residues:</strong> {{ pattern.charged }}
+            </li>
+        </ul>
+
+        <h6 class="mt-3">Amino Acid Composition</h6>
+        <table class="table table-sm table-bordered mt-2">
+            <thead class="table-dark">
+                <tr>
+                    <th>Amino Acid</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aa, count in pattern.composition.items %}
+                <tr>
+                    <td>{{ aa }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===================== -->
+    <!-- Mutation Detection -->
+    <!-- ===================== -->
+    <div class="result-box mb-4">
+        <h4 class="text-warning">🧬 Mutation Detection</h4>
+        {{ mutation|safe }}
+    </div>
+
+    <!-- ===================== -->
+    <!-- Disease Prediction -->
+    <!-- ===================== -->
+    <div class="result-box mb-4">
+        <h4 class="text-danger">🩺 Disease Prediction</h4>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Disease Category</th>
+                    <th>Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for disease, count in disease.items %}
+                <tr>
+                    <td>{{ disease }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <br>
+    <div class="result-box mb-4 text-center">
+        <h4 class="text-danger">📊 Disease Prediction (Bar Chart)</h4>
+        <img src="{{ chart_url }}" class="img-fluid rounded shadow mt-3">
+    </div>
+
+    <br>
+    <div class="text-center mt-4">
+        <a href="{% url 'download_pdf' %}" class="btn btn-success btn-lg">
+            📄 Download PDF Report
+        </a>
+        
+    </div>
+    
+<br>
+    <div class="text-center">
+        <a href="{% url 'analysis' %}" class="btn btn-secondary btn-lg">
+          Analyze Another File
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+<div class="row justify-content-center">
+<div class="col-md-8 col-lg-6">
+<div class="card shadow-lg border-0 p-4">
+
+<h2 class="text-center text-primary fw-bold mb-4">
+🧬 Genomic Variant Analysis
+</h2>
+
+<p class="text-center text-muted mb-4">
+Upload a VCF file to analyze genomic variants and generate a diagnostic report.
+</p>
+
+<!-- ERROR -->
+<div id="errorBox" class="alert alert-danger text-center d-none"></div>
+
+<!-- SUCCESS -->
+<div id="successBox" class="alert alert-success text-center d-none"></div>
+
+<form id="analysisForm" enctype="multipart/form-data">
+{% csrf_token %}
+
+<!-- PATIENT ID -->
+<div class="mb-3">
+<label class="form-label fw-semibold">Patient ID</label>
+<input type="text" name="pid" class="form-control"
+placeholder="Enter Patient ID" required>
+</div>
+
+<!-- FILE -->
+<div class="mb-3">
+<label class="form-label fw-semibold">Upload VCF File</label>
+<input type="file" name="vcf" class="form-control" accept=".vcf" required>
+<small class="text-muted">Supported format: .vcf</small>
+</div>
+
+<!-- ANALYZE BUTTON -->
+<div class="text-center">
+<button type="submit" id="analyzeBtn"
+class="btn btn-success btn-lg mt-3 w-100">
+  Analyze
+</button>
+</div>
+
+</form>
+
+<!-- ========================= -->
+<!-- RESULTS SECTION -->
+<!-- ========================= -->
+<div id="results" style="display:none; margin-top:25px;">
+
+<h4 class="mt-4 text-danger">High Risk Variants</h4>
+
+<table class="table table-bordered" id="riskTable">
+<thead class="table-light">
+<tr>
+<th>Gene</th>
+<th>Chromosome</th>
+<th>Position</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<!-- ANALYSIS BUTTON -->
+<div class="text-center">
+<button id="analysisBtn"
+class="btn btn-primary w-100 mb-3"
+style="display:none;">
+  Run Full Analysis
+</button>
+</div>
+
+<h4>Prediction Results</h4>
+<div id="predictionResults"></div>
+
+<br>
+
+<a id="downloadBtn" href="#" target="_blank" style="display:none;">
+<button class="btn btn-dark w-100">
+⬇ Download Report
+</button>
+</a>
+
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+<script>
+
+const form = document.getElementById("analysisForm");
+const analyzeBtn = document.getElementById("analyzeBtn");
+const analysisBtn = document.getElementById("analysisBtn");
+
+const errorBox = document.getElementById("errorBox");
+const successBox = document.getElementById("successBox");
+
+const resultsDiv = document.getElementById("results");
+const riskTableBody = document.querySelector("#riskTable tbody");
+
+let savedFormData = null;
+
+
+// =====================================
+// STEP 1 → ANALYZE (HIGH RISK ONLY)
+// =====================================
+form.addEventListener("submit", function(e){
+
+e.preventDefault();
+
+savedFormData = new FormData(form);
+savedFormData.append("action","analyze");
+
+analyzeBtn.disabled = true;
+analyzeBtn.innerText = "Analyzing...";
+
+fetch("{% url 'analysis' %}",{
+method:"POST",
+headers:{
+"X-CSRFToken":document.querySelector('[name=csrfmiddlewaretoken]').value
+},
+body:savedFormData
+})
+.then(res=>res.json())
+.then(data=>{
+
+analyzeBtn.disabled=false;
+analyzeBtn.innerText="Analyze";
+
+if(!data.success){
+showError(data.error);
+return;
+}
+
+resultsDiv.style.display="block";
+riskTableBody.innerHTML="";
+
+if(data.high_risk.length === 0){
+riskTableBody.innerHTML =
+"<tr><td colspan='3'>No High Risk Variants Found</td></tr>";
+}
+else{
+data.high_risk.forEach(v=>{
+riskTableBody.innerHTML += `
+<tr>
+<td>${v.gene}</td>
+<td>${v.chromosome}</td>
+<td>${v.position}</td>
+</tr>`;
+});
+}
+
+analysisBtn.style.display="block";
+
+})
+.catch(()=>showError("Server error"));
+
+});
+
+
+// =====================================
+// STEP 2 → FULL ANALYSIS + PDF
+// =====================================
+analysisBtn.addEventListener("click", function(){
+
+savedFormData.set("action","report");
+
+analysisBtn.disabled=true;
+analysisBtn.innerText="Running Analysis...";
+
+fetch("{% url 'analysis' %}",{
+method:"POST",
+headers:{
+"X-CSRFToken":document.querySelector('[name=csrfmiddlewaretoken]').value
+},
+body:savedFormData
+})
+.then(res=>res.json())
+.then(data=>{
+
+analysisBtn.disabled=false;
+analysisBtn.innerText=" Run Full Analysis";
+
+if(!data.success){
+showError(data.error);
+return;
+}
+
+// Prediction Results
+let html="";
+data.diseases.forEach((d,i)=>{
+html += `<div>${d} : <b>${data.scores[i].toFixed(3)}</b></div>`;
+});
+
+document.getElementById("predictionResults").innerHTML = html;
+
+// Download button
+const downloadBtn = document.getElementById("downloadBtn");
+downloadBtn.href = data.file_url;
+downloadBtn.style.display="block";
+
+successBox.innerText="Analysis completed successfully!";
+successBox.classList.remove("d-none");
+
+})
+.catch(()=>showError("Server error"));
+
+});
+
+
+// =====================================
+function showError(msg){
+errorBox.innerText = msg;
+errorBox.classList.remove("d-none");
+}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0 text-center p-4">
+            <div class="card-body">
+                <h2 class="card-title text-primary fw-bold">
+                    Advanced Genomic Analysis
+                </h2>
+
+                <p class="card-text text-muted mt-3">
+                    Analyze genomic sequences with pattern detection, 
+                    mutation analysis, and classification.
+                </p>
+
+                <a href="{% url 'analysis' %}" class="btn btn-primary btn-lg mt-4">
+                     Start Analysis
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

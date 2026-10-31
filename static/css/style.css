@@ -1,0 +1,51 @@
+/* GLOBAL */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* CARD CUSTOMIZATION */
+.card {
+    border-radius: 15px;
+    background: linear-gradient(135deg, #ffffff, #f1f5ff);
+}
+
+/* HEADINGS */
+h1, h2 {
+    letter-spacing: 0.5px;
+}
+
+/* BUTTON OVERRIDE */
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    transform: translateY(-1px);
+}
+
+/* RESULT BOX */
+.result-box {
+    background: #eef2ff;
+    border-left: 5px solid #4f46e5;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* TABLE */
+table th {
+    background: #1e293b;
+    color: white;
+}
+
+table td {
+    background: #f8fafc;
+}
+
+/* FOOTER FIX FOR SMALL SCREENS */
+@media (max-height: 600px) {
+    footer {
+        position: static;
+    }
+}
